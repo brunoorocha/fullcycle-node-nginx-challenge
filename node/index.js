@@ -3,12 +3,11 @@ const mysql = require('mysql2/promise')
 
 const port = 3000
 
-app.get('/', async (req, res) => {
+app.get('/', async (_, res) => {
+    await executeNameIsertion('Bruno')
     const result = await executeQuery()
-    const namesList = result.reduce((previous, current) => {
-        return previous + `<li>${current.name}</li>`
-    }, '')
-    res.send(`<h1>Full Cycle!!</h1><h3>Nomes cadastrados:</h3><ul>${namesList}</ul>`)
+    const namesList = resultToHTMLList(result)
+    res.send(`<h1>Full Cycle!!!</h1><h3>Nomes cadastrados:</h3><ul>${namesList}</ul>`)
 })
 
 app.listen(port, () => {
@@ -22,3 +21,14 @@ const executeQuery = async () => {
     await connection.end()
     return result
 }
+
+const executeNameIsertion = async name => {
+    const connection = await mysql.createConnection('mysql://root:root@db:3306/nodedb')
+    await connection.connect()
+    await connection.query('insert into people (name) values (?)', [name])
+    await connection.end()
+}
+
+const resultToHTMLList = result => result.reduce((previous, current) => {
+    return previous + `<li>${current.name}</li>`
+}, '')
